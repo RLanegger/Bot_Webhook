@@ -1,0 +1,6 @@
+{
+  "name": "LH API API.AI webhook ",
+  "description": "LH API API.AI webhook",
+  "repository": "https://github.com/RLanegger/Bot_Webhook",
+  "logo": "https://developer.lufthansa.com/files/LIH_Logo_Verlauf_RGB.png",
+  "keywords": ["LH","OpenAPI", "natural language"]
