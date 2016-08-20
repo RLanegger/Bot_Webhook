@@ -1,4 +1,4 @@
-#from urllib2 import Request, urlopen, URLError
+from urllib2 import Request, urlopen, URLError
 import requests, datetime , os
 import urllib2
 from datetime import datetime, timedelta
@@ -24,10 +24,10 @@ def webhook():
     res = processRequest(req)
 
     res = json.dumps(res, indent=4)
-    print res
+
     r = make_response(res)
-#    r = make_response(req)
     r.headers['Content-Type'] = 'application/json'
+    print r
     return r
 
 def header_token (file):
@@ -64,6 +64,7 @@ def header_token (file):
         #f.write(stream)
         #f.close()
         header_call = createHeader(access_token)
+        print header_call
         return header_call        
         
 #    return 'Error in Authentication'
@@ -74,18 +75,19 @@ def getNewToken():
         'client_id' : client_id,
         'client_secret': client_secret, 
         'grant_type' : 'client_credentials'}
-#    try:            
-    r = requests.post(request, data = header_auth)
-    j =  r.json() 
+    try:            
+        r = requests.post(request, data = header_auth)
+        j =  r.json() 
 #        access_token = { 'Authorization': 'Bearer ' + j['access_token']}
         
-    if r.status_code > 299:
-        raise URLError('No access token retrieved! :')
-    else:
-        token = j['access_token']
-        return token
-#    except URLError, e:
-#        print 'Error: ', e
+        if r.status_code > 299:
+            raise URLError('No access token retrieved! :')
+        else:
+            token = j['access_token']
+            return token
+            
+    except URLError, e:
+        print 'Error: ', e
  #   else:
          
     
