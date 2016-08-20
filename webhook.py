@@ -16,12 +16,7 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json(silent=True, force=True)
-#For testing purpose
-    request = ('https://posthere.io/9fd0-437b-8051')
-    test_data = req
-    
-    r.requests.post(request, data = test_data)
-#For testing end    
+   
     #print("Request:")
     #print(json.dumps(req, indent=4))
 
