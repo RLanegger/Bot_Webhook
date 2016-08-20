@@ -20,16 +20,17 @@ def webhook():
     request = ('https://posthere.io/9fd0-437b-8051')
     test_data = req
     
-    requests.post(request, data = test_data)
+    r.requests.post(request, data = test_data)
 #For testing end    
     #print("Request:")
     #print(json.dumps(req, indent=4))
 
-    res = processRequest(req)
+#    res = processRequest(req)
 
-    res = json.dumps(res, indent=4)
-    # print(res)
-    r = make_response(res)
+#    res = json.dumps(res, indent=4)
+    
+#    r = make_response(res)
+    r = make_response(req)
     r.headers['Content-Type'] = 'application/json'
     return r
 
