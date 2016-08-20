@@ -38,6 +38,7 @@ def header_token (file):
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)     
     tmp = f.read()
+    print tmp
     f.close()
     if tmp:
         strtime = tmp.split(';')[0]
