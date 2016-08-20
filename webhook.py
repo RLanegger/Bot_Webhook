@@ -20,7 +20,7 @@ def webhook():
     request = ('https://posthere.io/9fd0-437b-8051')
     test_data = req
     
-    test = requests.post(request, data = test_data)
+    requests.post(request, data = test_data)
 #For testing end    
     #print("Request:")
     #print(json.dumps(req, indent=4))
