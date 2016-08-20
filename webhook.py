@@ -98,12 +98,14 @@ def getHeader():
     return headers
 
 def callRequest(myrequest, header):
-            '''headers = {
-                'Authorization': #str(access_token),
-                'Bearer 7u4gey8behd39uprkfjqn3tp',
-                'Accept': 'application/json',
-            'Content-Type' : 'application/json'}'''
-        req_data = ('https://api.lufthansa.com/v1/' + myrequest)
+#            headers = {
+#                'Authorization': #str(access_token),
+#                'Bearer 7u4gey8behd39uprkfjqn3tp',
+#                'Accept': 'application/json',
+#            'Content-Type' : 'application/json'}
+#        data = 'https://api.lufthansa.com/v1/' + myrequest
+        data = 'https://api.lufthansa.com/v1/operations/flightstatus/#LH400/2016-09-20'
+        req_data = (data)
         req_call = requests.get(req_data, headers = header) 
         if req_call.status_code > 499:
             raise URLError('No data to process! :')
@@ -112,10 +114,9 @@ def callRequest(myrequest, header):
 
 def makeWebhookResult(flight, date, status, origin, destination):
 
-    speech = "Your flight" + flight + "on date " + date + " from " + origin + " to " + destination " is " + status
-
-    print("Response:")
-    print(speech)   
+    speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
+#    print("Response:")
+#    print(speech)   
     return {
         "speech": speech,
         "displayText": speech,
