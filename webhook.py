@@ -64,7 +64,6 @@ def header_token (file):
         #f.write(stream)
         #f.close()
         header_call = createHeader(access_token)
-        print header_call
         return header_call        
         
 #    return 'Error in Authentication'
@@ -112,7 +111,7 @@ def callRequest(myrequest, header):
 
         req_data = (data)
         req_call = requests.get(req_data, headers = header) 
-        #print data
+        print req_data
         if req_call.status_code > 499:
             raise URLError('No data to process! :')
         else:
