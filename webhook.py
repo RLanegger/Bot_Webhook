@@ -38,7 +38,7 @@ def header_token (file):
     except IOError as e:
         print "I/O error({0}): {1}".format(e.errno, e.strerror)     
     tmp = f.read()
-    print tmp
+    print ('Test - ' + str(tmp) )
     f.close()
     if tmp:
         strtime = tmp.split(';')[0]
@@ -47,10 +47,10 @@ def header_token (file):
         if time < now or len(access_token) <= 20: #Token is invalid because older than 24h
             print ('get new header')
             access_token =  getNewToken()
-            f = open(file,'w')
-            stream = str(now) + ';' + str(access_token)
-            f.write(stream)
-            f.close() 
+            #f = open(file,'w')
+            #stream = str(now) + ';' + str(access_token)
+            #f.write(stream)
+            #f.close() 
             header_call = createHeader(access_token)
             return header_call
         else:
@@ -64,7 +64,8 @@ def header_token (file):
         #f.write(stream)
         #f.close()
         header_call = createHeader(access_token)
-        return header_call 
+        return header_call        
+        
     return 'Error in Authentication'
 
 def getNewToken():
