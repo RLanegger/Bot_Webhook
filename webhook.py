@@ -10,6 +10,9 @@ from flask import make_response
 client_id = ('edqrrrnzamxxj24z5haa6r4j')
 client_secret = ('bVAJshaVVf')
 
+# Flask app should start in global layout
+app = Flask(__name__)
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json(silent=True, force=True)
@@ -53,10 +56,10 @@ def header_token (file):
     else:
         print 'get initial Header'
         access_token =  getNewToken()
-        f = open(file,'w')
-        stream = str(now) + ';' + str(access_token)
-        f.write(stream)
-        f.close()
+        #f = open(file,'w')
+        #stream = str(now) + ';' + str(access_token)
+        #f.write(stream)
+        #f.close()
         header_call = getHeader(access_token)
         return header_call 
     return 'Error in Authentication'
@@ -82,16 +85,16 @@ def getNewToken():
  #   else:
          
     
-def getHeader(access_token):
-    header_call = {
-            'Authorization': 'Bearer ' + str(access_token),
-        'Accept': 'application/json'}
-    return header_call
+#def getHeader(access_token):
+ #   header_call = {
+  #          'Authorization': 'Bearer ' + str(access_token),
+   #     'Accept': 'application/json'}
+    #return header_call
     
-    def getHeader():       
-        file = './key.txt'
-        headers = Myheader.header_token(file)
-        return headers
+def getHeader():       
+    file = './key.txt'
+    headers = header_token(file)
+    return headers
 
 def callRequest(myrequest, header):
             '''headers = {
