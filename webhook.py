@@ -1,5 +1,6 @@
-from urllib2 import Request, urlopen, URLError
-import requests, datetime #, os
+#from urllib2 import Request, urlopen, URLError
+import requests, datetime , os
+import urllib2
 from datetime import datetime, timedelta
 import json
 
