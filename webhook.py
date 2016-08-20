@@ -124,7 +124,7 @@ def makeWebhookResult(flight, date, status, origin, destination):
         "displayText": speech,
         # "data": data,
         # "contextOut": [],
-        "source": "LH_API_FlightStatus"
+        "source": "LHOpenAPIFlightStatus"
     } 
 def userInput(req):
     result = req.get("result")
