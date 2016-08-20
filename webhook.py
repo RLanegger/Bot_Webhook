@@ -20,7 +20,7 @@ def webhook():
    
     #print("Request:")
     #print(json.dumps(req, indent=4))
-
+    print req
     res = processRequest(req)
 
     res = json.dumps(res, indent=4)
@@ -78,7 +78,7 @@ def getNewToken():
         r = requests.post(request, data = header_auth)
         j =  r.json() 
 #        access_token = { 'Authorization': 'Bearer ' + j['access_token']}
-        
+
         if r.status_code > 299:
             raise URLError('No access token retrieved! :')
         else:
@@ -111,7 +111,7 @@ def callRequest(myrequest, header):
 
         req_data = (data)
         req_call = requests.get(req_data, headers = header) 
-        print req_data
+        
         if req_call.status_code > 499:
             raise URLError('No data to process! :')
         else:
@@ -131,14 +131,17 @@ def makeWebhookResult(flight, date, status, origin, destination):
         "source": "LHOpenAPIFlightStatus"
     } 
 def userInput(req):
-    result = req.get("result")
+
+    result = req.get('result')
     parameters = result.get("parameters")
-#    print parameter
+    rfcString = parameters.get('date',{}).get('rfcString')
+    date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
     return {
         "flightNumber" : parameters.get("flightNumber"),
-        "date": parameters.get("date")
+        "date": date
     }
-
+   # else:
+  #      return {'Error in Coding'}
 def processRequest(req):
     try:   
         header = getHeader()
@@ -176,4 +179,4 @@ if __name__ == '__main__':
 
     print "Starting app on port %d" % port
 
-    app.run(debug=False, port=port, host='0.0.0.0') 
+    app.run(debug=False, port=port, host='127.0.0.1') 
