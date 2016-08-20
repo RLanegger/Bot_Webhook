@@ -17,8 +17,8 @@ app = Flask(__name__)
 def webhook():
     req = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    print(json.dumps(req, indent=4))
+    #print("Request:")
+    #print(json.dumps(req, indent=4))
 
     res = processRequest(req)
 
@@ -152,10 +152,10 @@ def processRequest(req):
         methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
         dCityCall = callRequest(methods, header) 
         destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-        print flightStatus ,"Origin", origin,"Destination", destination
+        #print flightStatus ,"Origin", origin,"Destination", destination
         speech =  makeWebhookResult(flight, date, flightStatus, origin, destination)
     except URLError, e:
-        return {}
+        return {flighstatus}
     else:
         return speech
 
