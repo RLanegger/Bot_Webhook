@@ -1,2 +1,2 @@
-buildpacks:set heroku/python
+
 Flask==0.10.1
