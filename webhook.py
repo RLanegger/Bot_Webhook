@@ -31,32 +31,32 @@ def webhook():
     return r
 
 def header_token (file):
-    now = datetime.now()
-    old = now 
-    try:
-        f = open(file,'r')
-    except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)     
-    tmp = f.read()
-    print ('Test - ' + str(tmp) )
-    f.close()
-    if tmp:
-        strtime = tmp.split(';')[0]
-        time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
-        access_token = tmp.split(';')[1]
-        if time < now or len(access_token) <= 20: #Token is invalid because older than 24h
-            print ('get new header')
-            access_token =  getNewToken()
-            #f = open(file,'w')
-            #stream = str(now) + ';' + str(access_token)
-            #f.write(stream)
-            #f.close() 
-            header_call = createHeader(access_token)
-            return header_call
-        else:
-            header_call = createHeader(access_token)
-            return header_call 
-    else:
+#    now = datetime.now()
+#    old = now 
+#    try:
+#        f = open(file,'r')
+#    except IOError as e:
+#        print "I/O error({0}): {1}".format(e.errno, e.strerror)     
+#    tmp = f.read()
+#    print ('Test - ' + str(tmp) )
+#    f.close()
+#    if tmp:
+#        strtime = tmp.split(';')[0]
+#        time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
+#        access_token = tmp.split(';')[1]
+#        if time < now or len(access_token) <= 20: #Token is invalid because older than 24h
+#            print ('get new header')
+#            access_token =  getNewToken()
+#            f = open(file,'w')
+#            #stream = str(now) + ';' + str(access_token)
+#            #f.write(stream)
+#            #f.close() 
+#            header_call = createHeader(access_token)
+#            return header_call
+#        else:
+#            header_call = createHeader(access_token)
+#            return header_call 
+#    else:
         print 'get initial Header'
         access_token =  getNewToken()
         #f = open(file,'w')
@@ -66,7 +66,7 @@ def header_token (file):
         header_call = createHeader(access_token)
         return header_call        
         
-    return 'Error in Authentication'
+#    return 'Error in Authentication'
 
 def getNewToken():
     request = ('https://api.lufthansa.com/v1/oauth/token')
