@@ -131,7 +131,7 @@ def callRequest(myrequest, header):
 def makeWebhookResult(flight, date, status, origin, destination):
     speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
     if status == 'Flight Delayed':
-        color = 'red'
+        color = '#FF0000'
     else:
         color = "#36a64f"
         
