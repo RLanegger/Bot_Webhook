@@ -222,11 +222,11 @@ def processRequest(req):
        
     lh_api = callRequest(methods, header)
     if actions == 'LHOpenAPIFlightStatus':
-        flightstatus =  buildFlightStatus(lh_api, parameters,header)
+        flightstatus =  buildFlightStatus(lh_api, uinput,header)
         speech = buildFlightStatusSpeech(flightstatus)
     elif actions == 'LHOpenAPITerminalGate':
         #GateInformation from Flightstatus
-        depgate = buildGateInformation(lh_api, parameters,header)
+        depgate = buildGateInformation(lh_api, uinput,header)
         speech = buildGateSpeech(depgate)
     return speech
 
