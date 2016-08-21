@@ -3,6 +3,8 @@ import requests, datetime , os
 import urllib2
 from datetime import datetime, timedelta
 import json
+import sys#, slack_messages
+
 
 from flask import Flask
 from flask import request
@@ -117,7 +119,7 @@ def callRequest(myrequest, header):
         req_data = 'https://api.lufthansa.com/v1/' + myrequest
 
 #        req_data = data
-        print req_data
+        #print req_data
         req_call = requests.get(req_data, headers = header) 
         print str(req_call.status_code)
         if req_call.status_code > 499:
@@ -128,7 +130,7 @@ def callRequest(myrequest, header):
 
 def makeWebhookResult(flight, date, status, origin, destination):
     speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
-
+    slack_message = { "text": speech,"attachments": [ {"title": channel.get("title"),"title_link": channel.get("link"),"color": "#36a64f"}]}
        
 #    print("Response:")
 #    print(speech)   
@@ -138,7 +140,7 @@ def makeWebhookResult(flight, date, status, origin, destination):
        
         # "contextOut": [],
         "source": "LHOpenAPIFlightStatus",
-        "data": '{"slack": { "text": speech,"attachments": [{"title": channel.get("title"),"title_link": channel.get("link"),"color": "#36a64f"}]}}'
+        "data": { "slack" : slack_message }
     }
      
     
@@ -187,5 +189,11 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
 
     print "Starting app on port %d" % port
-    app.run(debug=False, port=port, host='0.0.0.0') 
+    if sys.platform == 'darwin':
+        app.run(debug=False, port=port, host='127.0.0.1') 
+    else:
+        app.run(debug=False, port=port, host='0.0.0.0') 
+        
+
+    
  
