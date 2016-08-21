@@ -180,9 +180,8 @@ def getInputDate(indate):
       return date
       
 def userInput(req):
-    
+        print req
         result = req.get('result')
-        print result
         parameters = result.get("parameters")
         date = getInputDate(parameters.get('date'))
         return { 
