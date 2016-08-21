@@ -202,7 +202,7 @@ def processRequest(req):
     uinput = userInput(actions, parameters)
         
     methods = constructMethods(actions,uinput)
-       
+    print methods   
     lh_api = callRequest(methods, header)
     print lh_api
     if actions == 'LHOpenAPIFlightStatus':
@@ -210,6 +210,7 @@ def processRequest(req):
         speech = buildFlightStatusSpeech(flightstatus)
     elif actions == 'LHOpenAPITerminalGate':
         #GateInformation from Flightstatus
+        print 'Gate'
         depgate = buildGateInformation(lh_api, uinput,header)
         print depgate
         speech = buildGateSpeech(depgate)
