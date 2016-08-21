@@ -3,7 +3,7 @@ import requests, datetime , os
 import urllib2
 from datetime import datetime, timedelta
 import json
-import sys#, slack_messages
+import sys, slack_messages
 
 
 from flask import Flask
@@ -126,97 +126,47 @@ def callRequest(myrequest, header):
             raise URLError('No data to process! :')
         else:
             return req_call.json()
-
-
-def makeWebhookResult(flight, date, status, origin, destination):
-    speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
-    if status == 'Flight Delayed':
-        color = '#FF0000'
-    else:
-        color = "#36a64f"
-        
-    slack_message = { 
-        "text": speech,
-        "attachments": [ 
-            {
-                "title": status,
-                "color": color,
-                "fields" : [
-                          {
-                              "title": "Origin",
-                              "value": origin,
-                              "short": "false"
-                          },
-                          {
-                              "title": "Destination",
-                              "value": destination,
-                              "short": "false"
-                          },
-                          {
-                              "title": "Date",
-                              "value": date,
-                              "short": "false"
-                          }
-                      ]
-                  }
-              ]
-          }
-       
-#    print("Response:")
-#    print(speech)   
-    return {
-        "speech": speech,
-        "displayText": speech,
-       
-        # "contextOut": [],
-        "source": "LHOpenAPIFlightStatus",
-        "data": { "slack" : slack_message }
-    }
-     
     
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
       date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
       return date
       
-def userInput(req):
-
-        result = req.get('result')
-        actions = result.get('action')
-
+def userInput(actions, parameters):
         print actions
-        parameters = result.get("parameters")
-        date = getInputDate(parameters.get('date'))
-        return { 
+        if actions == 'LHOpenAPIFlightStatus':
+            date = getInputDate(parameters.get('date'))
+            result = { 
             'flightNumber' : parameters.get('flightNumber'),
-            "date": date
-        }
+            "date": date}
+        #elif action =='LHOpenGate':    
+        
+        return result
 
-def processRequest(req):
-
-        header = getHeader()
-        uinput = userInput(req)
+def constructMethods(actions,uinput):
+    if actions == 'LHOpenAPIFlightStatus':
         flightDate = str(uinput.get("date"))
         flightNumber = str(uinput.get("flightNumber")) 
         #print flightNumber
         methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
         #print methods
-    
-        lh_api = callRequest(methods, header) 
-        flightStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('TimeStatus',{}).get('Definition')
-        originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
-        destinationStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Arrival',{}).get('AirportCode',{}) 
-        #print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
-    
-        methods ='references/airports/'+ originStatus + '?LHoperated=true'
-        oCityCall = callRequest(methods, header) 
-        origin =  oCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-        methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
-        dCityCall = callRequest(methods, header) 
-        destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-        #print flightStatus ,"Origin", origin,"Destination", destination            
-        speech =  makeWebhookResult(flightNumber, flightDate, flightStatus, origin, destination)
-        return speech
+    #elif action =='LHOpenGate':   
+    return methods
+
+def processRequest(req):
+    header = getHeader()
+    result = req.get('result')
+    actions = result.get('action')  #get what ressource to ask on API
+    parameters = result.get("parameters")
+    uinput = userInput(actions, parameters)
+        
+    methods = constructMethods(actions,uinput)
+       
+    lh_api = callRequest(methods, header)
+           
+    speech =  buildFlightStatus(lh_api)
+
+    return speech
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
