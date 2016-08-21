@@ -130,7 +130,7 @@ def callRequest(myrequest, header):
 
 def makeWebhookResult(flight, date, status, origin, destination):
     speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
-    slack_message = { "text": speech,"attachments": [ {"title": channel.get("title"),"title_link": channel.get("link"),"color": "#36a64f"}]}
+    slack_message = { "text": speech,"attachments": [ {"title": "Flugstatus","color": "#36a64f"}]}
        
 #    print("Response:")
 #    print(speech)   
