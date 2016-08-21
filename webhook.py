@@ -133,13 +133,16 @@ def userInput(actions, parameters):
         print actions
         if actions == 'LHOpenAPIFlightStatus':
             date = getInputDate(parameters.get('date'))
-            
             result = {
                 'flightNumber' : parameters.get('flightNumber'),
                 "date": date
                     }
-        #elif action =='LHOpenGate':    
-        
+        elif action =='LHOpenAPITerminalGate':    
+            date = getInputDate(parameters.get('date'))
+            result = {
+                'flightNumber' : parameters.get('flightNumber'),
+                "date": date
+                    }
         return result
 
 def constructMethods(actions,uinput):
