@@ -1,19 +1,13 @@
-def buildFlightStatus(lh_api):
+def buildFlightStatusSpeech(flightstatus):
     
-    flightStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('TimeStatus',{}).get('Definition')
-    originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
-    destinationStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Arrival',{}).get('AirportCode',{}) 
-    #print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
-    
-    methods ='references/airports/'+ originStatus + '?LHoperated=true'
-    oCityCall = callRequest(methods, header) 
-    origin =  oCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-    methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
-    dCityCall = callRequest(methods, header) 
-    destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-    #print flightStatus ,"Origin", origin,"Destination", destination
+    status = str(flightstatus.get('status'))
+    origin = str(flightstatus.get('origin'))
+    destination = str(flightstatus.get('destination'))
+    date = str(flightstatus.get('date'))
+    flight = str(flightstatus.get('flight'))
         
     speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
+    
     if status == 'Flight Delayed':
         color = '#FF0000'
     else:
@@ -56,3 +50,67 @@ def buildFlightStatus(lh_api):
         "source": "LHOpenAPIFlightStatus",
         "data": { "slack" : slack_message }
     }
+    
+def buildGateSpeech(depgate):
+    
+        status = str(depgate.get('status'))
+        origin = str(depgate.get('origin'))
+        gate = str(depgate.get('gate'))
+        terminal = str(depgate.get('terminal'))
+        flight = str(depgate.get('flight'))
+        
+        speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' departs from Terminal ' +  terminal + ' Gate ' + gate
+    
+        if status == 'Flight Delayed':
+            color = '#FF0000'
+        else:
+            color = "#36a64f"
+        
+        slack_message = { 
+            "text": speech,
+            "attachments": [ 
+                {
+                    "title": status,
+                    "color": "#36a64f",
+                    "fields" : [
+                              {
+                                  "title": "Flight",
+                                  "value": flight,
+                                  "short": "false"
+                              },
+                              {
+                                  "title": "Date",
+                                  "value": date,
+                                  "short": "false"
+                              },
+                              {
+                                  "title": "Origin",
+                                  "value": origin,
+                                  "short": "false"
+                              },
+                              {
+                                  "title": "Terminal",
+                                  "value": terminal,
+                                  "short": "false"
+                              },
+                              {
+                                  "title": "Gate",
+                                  "value": gate,
+                                  "short": "false"
+                              }
+
+                          ]
+                      }
+                  ]
+              }
+       
+    #    print("Response:")
+    #    print(speech)   
+        return {
+            "speech": speech,
+            "displayText": speech,
+       
+            # "contextOut": [],
+            "source": "LHOpenAPITerminalGate",
+            "data": { "slack" : slack_message }
+        }

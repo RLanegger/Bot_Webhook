@@ -3,8 +3,8 @@ import requests, datetime , os
 import urllib2
 from datetime import datetime, timedelta
 import json
-import sys, slack_messages
-
+import sys
+from slack_messages import buildFlightStatusSpeech
 
 from flask import Flask
 from flask import request
@@ -17,12 +17,9 @@ client_secret = ('bVAJshaVVf')
 app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
+
 def webhook():
     req = request.get_json(silent=True, force=True)
-   
-    #print("Request:")
-    #print(json.dumps(req, indent=4))
-#    print req
 
     res = processRequest(req)
     
@@ -136,36 +133,101 @@ def userInput(actions, parameters):
         print actions
         if actions == 'LHOpenAPIFlightStatus':
             date = getInputDate(parameters.get('date'))
-            result = { 
-            'flightNumber' : parameters.get('flightNumber'),
-            "date": date}
+            
+            result = {
+                'flightNumber' : parameters.get('flightNumber'),
+                "date": date
+                    }
         #elif action =='LHOpenGate':    
         
         return result
 
 def constructMethods(actions,uinput):
+    
     if actions == 'LHOpenAPIFlightStatus':
         flightDate = str(uinput.get("date"))
         flightNumber = str(uinput.get("flightNumber")) 
         #print flightNumber
         methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
         #print methods
-    #elif action =='LHOpenGate':   
+    elif action =='LHOpenAPITerminalGate':   
+        flightDate = str(uinput.get("date"))
+        flightNumber = str(uinput.get("flightNumber")) 
+        #print flightNumber
+        methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
+        #print methods
     return methods
+    
+def buildFlightStatus(lh_api, parameters,header):
+    
+    status = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('TimeStatus',{}).get('Definition')
+    originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
+    destinationStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Arrival',{}).get('AirportCode',{}) 
+    #print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
+    
+    methods ='references/airports/'+ originStatus + '?LHoperated=true'
+    oCityCall = callRequest(methods, header) 
+    origin =  oCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
+    methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
+    dCityCall = callRequest(methods, header) 
+    destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
+    #print flightStatus ,"Origin", origin,"Destination", destination
+    
+    flightstatus = {
+        'status' : status,
+        'origin' : origin,
+        'destination' : destination,
+        'date' : parameters.get('date'),
+        'flight' : parameters.get('flightNumber')
+        }
+
+    return flightstatus
+
+def buildGateInformation(lh_api, parameters,header):
+    
+        #status = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('TimeStatus',{}).get('Definition')
+        terminal = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('Terminal',{}).get('Name')
+        gate = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('Terminal',{}).get('Gate')
+        #originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
+        #destinationStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Arrival',{}).get('AirportCode',{}) 
+        #print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
+    
+        methods ='references/airports/'+ originStatus + '?LHoperated=true'
+        oCityCall = callRequest(methods, header) 
+        origin =  oCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
+        #methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
+        #dCityCall = callRequest(methods, header) 
+        #destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
+        #print flightStatus ,"Origin", origin,"Destination", destination
+    
+        depgate = {
+#            'status' : status,
+            'terminal' : terminal,
+            'gate' : gate,
+            'date' : parameters.get('date'),
+            'flight' : parameters.get('flightNumber')
+            }
+
+        return flightstatus
 
 def processRequest(req):
     header = getHeader()
     result = req.get('result')
     actions = result.get('action')  #get what ressource to ask on API
     parameters = result.get("parameters")
+    
     uinput = userInput(actions, parameters)
         
     methods = constructMethods(actions,uinput)
        
     lh_api = callRequest(methods, header)
-           
-    speech =  buildFlightStatus(lh_api)
-
+    if actions == 'LHOpenAPIFlightStatus':
+        flightstatus =  buildFlightStatus(lh_api, parameters,header)
+        speech = buildFlightStatusSpeech(flightstatus)
+    elif actions == 'LHOpenAPITerminalGate':
+        #GateInformation from Flightstatus
+        depgate = buildGateInformation(lh_api, parameters,header)
+        speech = buildGateSpeech(depgate)
     return speech
 
 if __name__ == '__main__':
