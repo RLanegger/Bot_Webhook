@@ -20,15 +20,16 @@ def webhook():
    
     #print("Request:")
     #print(json.dumps(req, indent=4))
-    print req
+#    print req
+
     res = processRequest(req)
-
+    
     res = json.dumps(res, indent=4)
-
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
-    print r
     return r
+
+    
 
 def header_token (file):
 #    now = datetime.now()
@@ -88,7 +89,13 @@ def getNewToken():
     except URLError, e:
         print 'Error: ', e
  #   else:
-         
+ 
+def is_json(myjson):
+    try:
+        json_object = json.loads(myjson)
+    except TypeError, e:
+        return False
+    return True         
     
 def createHeader(access_token):
     header_call = {
@@ -107,56 +114,64 @@ def callRequest(myrequest, header):
 #                'Bearer 7u4gey8behd39uprkfjqn3tp',
 #                'Accept': 'application/json',
 #            'Content-Type' : 'application/json'}
-        data = 'https://api.lufthansa.com/v1/' + myrequest
+        req_data = 'https://api.lufthansa.com/v1/' + myrequest
 
-        req_data = (data)
+#        req_data = data
+        print req_data
         req_call = requests.get(req_data, headers = header) 
-        
+        print str(req_call.status_code)
         if req_call.status_code > 499:
             raise URLError('No data to process! :')
         else:
-               return req_call.json()
+            return req_call.json()
 
 
 def makeWebhookResult(flight, date, status, origin, destination):
-
     speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
+
+       
 #    print("Response:")
 #    print(speech)   
     return {
         "speech": speech,
         "displayText": speech,
-        # "data": data,
+       
         # "contextOut": [],
-        "source": "LHOpenAPIFlightStatus"
-    } 
-def userInput(req):
-
-    result = req.get('result')
-    parameters = result.get("parameters")
-    rfcString = parameters.get('date',{}).get('rfcString')
-    date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
-    return {
-        "flightNumber" : parameters.get("flightNumber"),
-        "date": date
+        "source": "LHOpenAPIFlightStatus",
+        "data": '{"slack": { "text": speech,"attachments": [{"title": channel.get("title"),"title_link": channel.get("link"),"color": "#36a64f"}]}}'
     }
-   # else:
-  #      return {'Error in Coding'}
+     
+    
+def getInputDate(indate):
+      rfcString = indate.get('rfcString')
+      date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
+      return date
+      
+def userInput(req):
+    
+        result = req.get('result')
+        parameters = result.get("parameters")
+        date = getInputDate(parameters.get('date'))
+        return { 
+            'flightNumber' : parameters.get('flightNumber'),
+            "date": date
+        }
+
 def processRequest(req):
-    try:   
+
         header = getHeader()
         uinput = userInput(req)
         flightDate = str(uinput.get("date"))
         flightNumber = str(uinput.get("flightNumber")) 
         #print flightNumber
         methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
- #       print methods
+        #print methods
+    
         lh_api = callRequest(methods, header) 
-
         flightStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('TimeStatus',{}).get('Definition')
         originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
         destinationStatus = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Arrival',{}).get('AirportCode',{}) 
-        print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
+        #print flightStatus ,"Origin", originStatus,"Destination", destinationStatus
     
         methods ='references/airports/'+ originStatus + '?LHoperated=true'
         oCityCall = callRequest(methods, header) 
@@ -164,19 +179,13 @@ def processRequest(req):
         methods ='references/airports/'+ destinationStatus + '?LHoperated=true'
         dCityCall = callRequest(methods, header) 
         destination = dCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
-        #print flightStatus ,"Origin", origin,"Destination", destination
+        #print flightStatus ,"Origin", origin,"Destination", destination            
         speech =  makeWebhookResult(flightNumber, flightDate, flightStatus, origin, destination)
-    except URLError, e:
-        return {'Error in Coding'}
-    else:
         return speech
-
-
-    
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
 
     print "Starting app on port %d" % port
-
-    app.run(debug=False, port=port, host='0.0.0.0') 
+    app.run(debug=False, port=port, host='127.0.0.1') 
+ 
