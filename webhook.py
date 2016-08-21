@@ -182,7 +182,7 @@ def getInputDate(indate):
 def userInput(req):
 
         result = req.get('result')
-        contexts = req.get('contexts')
+        contexts = result.get('contexts')
         print contexts
         parameters = result.get("parameters")
         date = getInputDate(parameters.get('date'))
