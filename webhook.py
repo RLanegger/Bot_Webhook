@@ -136,13 +136,14 @@ def callRequest(myrequest, header):
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
       date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
-      print date
-      print rfcString
+ #     print date
+#      print rfcString
       return date
       
 def userInput(actions, parameters):
         #print actions
         if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
+            print parameters.get('date')
             date = getInputDate(parameters.get('date'))
             result = {
                 'flightNumber' : parameters.get('FlightNumber'),
