@@ -134,7 +134,7 @@ def userInput(actions, parameters):
         if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
             date = getInputDate(parameters.get('date'))
             result = {
-                'flightNumber' : parameters.get('flightNumber'),
+                'flightNumber' : parameters.get('FlightNumber'),
                 "date": date
                     }
   
