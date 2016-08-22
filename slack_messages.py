@@ -104,3 +104,13 @@ def buildGateSpeech(depgate):
             "source": "LHOpenAPITerminalGate",
             "data": { "slack" : slack_message }
         }
+        
+def errorHandling(e, actions):
+    return {
+            "speech": e.reason,
+            "displayText": e.reason,
+       
+            # "contextOut": [],
+            "source": actions,
+            #"data": { "slack" : slack_message }
+        }

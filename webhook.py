@@ -4,7 +4,7 @@ import urllib2
 from datetime import datetime, timedelta
 import json
 import sys
-from slack_messages import buildFlightStatusSpeech, buildGateSpeech
+from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling
 
 from flask import Flask
 from flask import request
@@ -19,11 +19,19 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 
 def webhook():
-    req = request.get_json(silent=True, force=True)
+    try:
+        req = request.get_json(silent=True, force=True)
 
-    res = processRequest(req)
-    
-    res = json.dumps(res, indent=4)
+        res = processRequest(req)
+        print res
+        res = json.dumps(res, indent=4)
+        r = make_response(res)
+        r.headers['Content-Type'] = 'application/json'
+        return r
+    except URLError, e:
+        print e.reason
+        res = json.dumps(e.reason, indent=4)
+
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
     return r
@@ -114,15 +122,16 @@ def callRequest(myrequest, header):
 #                'Accept': 'application/json',
 #            'Content-Type' : 'application/json'}
         req_data = 'https://api.lufthansa.com/v1/' + myrequest
-
+#        try:
 #        req_data = data
         #print req_data
         req_call = requests.get(req_data, headers = header) 
         print str(myrequest) + ' --> Response Status: ' + str(req_call.status_code)
-        if req_call.status_code > 499:
-            raise URLError('No data to process! :')
+        if req_call.status_code <> 200:
+            raise URLError('Error in Input data')
         else:
             return req_call.json()
+   
     
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
@@ -194,28 +203,35 @@ def buildGateInformation(lh_api, parameters,header):
             }
 
         return depgate
-
+ 
 def processRequest(req):
-    header = getHeader()
-    result = req.get('result')
-    actions = result.get('action')  #get what ressource to ask on API
-    parameters = result.get("parameters")
+    try:
+        header = getHeader()
+        result = req.get('result')
+        actions = result.get('action')  #get what ressource to ask on API
+        parameters = result.get("parameters")
     
-    uinput = userInput(actions, parameters)
+        uinput = userInput(actions, parameters)
         
-    methods = constructMethods(actions,uinput)
+        methods = constructMethods(actions,uinput)
     #print methods   
-    lh_api = callRequest(methods, header)
+        lh_api = callRequest(methods, header)
     #print lh_api
-    if actions == 'LHOpenAPIFlightStatus':
-        flightstatus =  buildFlightStatus(lh_api, uinput,header)
-        speech = buildFlightStatusSpeech(flightstatus)
-    elif actions == 'LHOpenAPITerminalGate':
+        if actions == 'LHOpenAPIFlightStatus':
+            flightstatus =  buildFlightStatus(lh_api, uinput,header)
+            speech = buildFlightStatusSpeech(flightstatus)
+        elif actions == 'LHOpenAPITerminalGate':
         #GateInformation from Flightstatus
-        depgate = buildGateInformation(lh_api, uinput,header)
-        speech = buildGateSpeech(depgate)
-    return speech
+            depgate = buildGateInformation(lh_api, uinput,header)
+            speech = buildGateSpeech(depgate)
+            return speech
+    except URLError, e:
+        speech = errorHandling(e,actions)
+        raise URLError(speech)
+#        return e #URLError('Error in Input data')
+            
 
+            
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
 
