@@ -23,13 +23,13 @@ def webhook():
         req = request.get_json(silent=True, force=True)
 
         res = processRequest(req)
-        print res
+        #print res
         res = json.dumps(res, indent=4)
         r = make_response(res)
         r.headers['Content-Type'] = 'application/json'
         return r
     except URLError, e:
-        print e.reason
+        #print e.reason
         res = json.dumps(e.reason, indent=4)
 
     r = make_response(res)
@@ -136,6 +136,8 @@ def callRequest(myrequest, header):
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
       date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
+      print date
+      print rfcString
       return date
       
 def userInput(actions, parameters):
