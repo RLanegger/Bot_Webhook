@@ -4,7 +4,7 @@ import urllib2
 from datetime import datetime, timedelta
 import json
 import sys
-from slack_messages import buildFlightStatusSpeech
+from slack_messages import buildFlightStatusSpeech, buildGateSpeech
 
 from flask import Flask
 from flask import request
@@ -118,7 +118,7 @@ def callRequest(myrequest, header):
 #        req_data = data
         #print req_data
         req_call = requests.get(req_data, headers = header) 
-        print str(req_call.status_code)
+        print str(myrequest) + ' --> Response Status: ' + str(req_call.status_code)
         if req_call.status_code > 499:
             raise URLError('No data to process! :')
         else:
@@ -130,8 +130,8 @@ def getInputDate(indate):
       return date
       
 def userInput(actions, parameters):
-        print actions
-        if actions == 'LHOpenAPIFlightStatus' or action =='LHOpenAPITerminalGate':
+        #print actions
+        if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
             date = getInputDate(parameters.get('date'))
             result = {
                 'flightNumber' : parameters.get('flightNumber'),
@@ -142,7 +142,7 @@ def userInput(actions, parameters):
 
 def constructMethods(actions,uinput):
     
-    if actions == 'LHOpenAPIFlightStatus' or action =='LHOpenAPITerminalGate':
+    if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
         flightDate = str(uinput.get("date"))
         flightNumber = str(uinput.get("flightNumber")) 
         #print flightNumber
@@ -177,6 +177,7 @@ def buildFlightStatus(lh_api, parameters,header):
 
 def buildGateInformation(lh_api, parameters,header):
     
+        originStatus = str(lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('AirportCode',{}) )
         terminal = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('Terminal',{}).get('Name')
         gate = lh_api.get('FlightStatusResource', {}).get('Flights',{}).get('Flight',{}).get('Departure',{}).get('Terminal',{}).get('Gate')
     
@@ -185,13 +186,14 @@ def buildGateInformation(lh_api, parameters,header):
         origin =  oCityCall.get('AirportResource',{}).get('Airports',{}).get('Airport',{}).get('Names',{}).get('Name',{})[1].get('$',{})
     
         depgate = {
+            'origin' : originStatus,
             'terminal' : terminal,
             'gate' : gate,
             'date' : parameters.get('date'),
             'flight' : parameters.get('flightNumber')
             }
 
-        return flightstatus
+        return depgate
 
 def processRequest(req):
     header = getHeader()
@@ -202,17 +204,15 @@ def processRequest(req):
     uinput = userInput(actions, parameters)
         
     methods = constructMethods(actions,uinput)
-    print methods   
+    #print methods   
     lh_api = callRequest(methods, header)
-    print lh_api
+    #print lh_api
     if actions == 'LHOpenAPIFlightStatus':
         flightstatus =  buildFlightStatus(lh_api, uinput,header)
         speech = buildFlightStatusSpeech(flightstatus)
     elif actions == 'LHOpenAPITerminalGate':
         #GateInformation from Flightstatus
-        print 'Gate'
         depgate = buildGateInformation(lh_api, uinput,header)
-        print depgate
         speech = buildGateSpeech(depgate)
     return speech
 

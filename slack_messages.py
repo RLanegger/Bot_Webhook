@@ -53,31 +53,21 @@ def buildFlightStatusSpeech(flightstatus):
     
 def buildGateSpeech(depgate):
     
-        status = str(depgate.get('status'))
+        date = str(depgate.get('date'))
         origin = str(depgate.get('origin'))
         gate = str(depgate.get('gate'))
         terminal = str(depgate.get('terminal'))
         flight = str(depgate.get('flight'))
         
-        speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' departs from Terminal ' +  terminal + ' Gate ' + gate
-    
-        if status == 'Flight Delayed':
-            color = '#FF0000'
-        else:
-            color = "#36a64f"
-        
+        speech = 'Your flight' + flight + ' on date ' + date + ' from ' + origin + ' departs from Terminal ' +  terminal + ' Gate ' + gate
+
         slack_message = { 
             "text": speech,
             "attachments": [ 
                 {
-                    "title": status,
+                    "title": 'Terminal Gate Information for ' + flight,
                     "color": "#36a64f",
                     "fields" : [
-                              {
-                                  "title": "Flight",
-                                  "value": flight,
-                                  "short": "false"
-                              },
                               {
                                   "title": "Date",
                                   "value": date,
