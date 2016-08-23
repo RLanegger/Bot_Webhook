@@ -135,7 +135,7 @@ def callRequest(myrequest, header):
     
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
-      date = rfcString[0:4] + '-' + rfcString[4:6] + '-' + rfcString[6:8]
+      date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
  #     print date
 #      print rfcString
       return date
