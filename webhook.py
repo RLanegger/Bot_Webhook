@@ -142,10 +142,10 @@ def getInputDate(indate):
       
 def userInput(actions, parameters):
         #print actions
-        if actions == 'LHOpenAPIFlightStatus ' or actions =='LHOpenAPITerminalGate':
+        if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
             #print parameters.get('date')
             date = getInputDate(parameters.get('date'))
-            print 'Date for FlightStatus' + date
+            print 'Date for FlightStatus ' + date
             result = {
                 'flightNumber' : parameters.get('FlightNumber'),
                 "date": date
