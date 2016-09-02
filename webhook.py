@@ -89,8 +89,10 @@ def getNewToken():
 
         if r.status_code > 299:
             raise URLError('No access token retrieved! :')
+            print 'Error in  Authorization'
         else:
             token = j['access_token']
+            print 'Successful authorized'
             return token
             
     except URLError, e:
