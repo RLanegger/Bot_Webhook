@@ -124,7 +124,7 @@ def callRequest(myrequest, header):
         req_data = 'https://api.lufthansa.com/v1/' + myrequest
 #        try:
 #        req_data = data
-        #print req_data
+        print req_data
         req_call = requests.get(req_data, headers = header) 
         print str(myrequest) + ' --> Response Status: ' + str(req_call.status_code)
         if req_call.status_code <> 200:
@@ -135,7 +135,10 @@ def callRequest(myrequest, header):
     
 def getInputDate(indate):
       rfcString = indate.get('rfcString')
-      date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
+      if sys.platform == 'darwin':
+          date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
+      else:
+          date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
  #     print date
 #      print rfcString
       return date
@@ -212,10 +215,9 @@ def processRequest(req):
     try:
         header = getHeader()
         result = req.get('result')
-        print result 
         actions = result.get('action')  #get what ressource to ask on API
         parameters = result.get("parameters")
-    
+        print parameters
         uinput = userInput(actions, parameters)
         
         methods = constructMethods(actions,uinput)
