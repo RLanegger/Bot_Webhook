@@ -86,6 +86,7 @@ def getNewToken():
     try:            
         r = requests.post(request, data = header_auth)
         j =  r.json() 
+        print j
 #        access_token = { 'Authorization': 'Bearer ' + j['access_token']}
 
         if r.status_code > 299:
