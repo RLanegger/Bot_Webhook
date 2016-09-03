@@ -221,7 +221,7 @@ def processRequest(req):
         actions = result.get('action')  #get what ressource to ask on API
         print 'ACTION --> ', actions
         parameters = result.get('parameters')
-        print 'PARAMETER --> ', parameter
+        print 'PARAMETER --> ', parameters
         uinput = userInput(actions, parameters)
         print 'UINPUT --> ' , uinput
         methods = constructMethods(actions,uinput)
