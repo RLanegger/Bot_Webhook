@@ -84,6 +84,7 @@ def getNewToken():
         'client_secret': client_secret, 
         'grant_type' : 'client_credentials'}
     try:            
+        print header_auth
         r = requests.post(request, data = header_auth)
         j =  r.json() 
         print j
