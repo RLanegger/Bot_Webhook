@@ -217,11 +217,12 @@ def processRequest(req):
     try:
         header = getHeader()
         result = req.get('result')
+        print 'RESULT --> ' , result
         actions = result.get('action')  #get what ressource to ask on API
         parameters = result.get("parameters")
 
         uinput = userInput(actions, parameters)
-        
+        print 'UINPUT --> ' , uinput
         methods = constructMethods(actions,uinput)
     #print methods   
         lh_api = callRequest(methods, header)
@@ -233,10 +234,12 @@ def processRequest(req):
         #GateInformation from Flightstatus
             depgate = buildGateInformation(lh_api, uinput,header)
             speech = buildGateSpeech(depgate)
-            return speech
+        return speech
     except URLError, e:
         speech = errorHandling(e,actions)
+        print 'Error: ', e
         raise URLError(speech)
+
 #        return e #URLError('Error in Input data')
             
 
