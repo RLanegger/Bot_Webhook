@@ -140,18 +140,18 @@ def callRequest(myrequest, header):
     
 def getInputDate(indate):
     print 'INDATE --> ', indate
-    rfcString = indate.get('rfcString')
+    rfcString = indate.get('date')
     print 'RFCSTRING --> ', rfcstrin
-    if sys.platform == 'darwin':
-        date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
-    else:
-        date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
+    #if sys.platform == 'darwin':
+    date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
+    #else:
+    #    date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
  #     print date
 #      print rfcString
     return date
       
 def userInput(actions, parameters):
-    print actions
+    print 'ACTIONS --> ',actions
     if actions == status or actions == gate:
         #print parameters.get('date')
         date = getInputDate(parameters.get('date'))
