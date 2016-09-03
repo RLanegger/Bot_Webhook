@@ -219,9 +219,9 @@ def processRequest(req):
         result = req.get('result')
         print 'RESULT --> ' , result
         actions = result.get('action')  #get what ressource to ask on API
-        print 'RESULT --> ', actions
-        parameters = result.get("parameters")
-
+        print 'ACTION --> ', actions
+        parameters = result.get('parameters')
+        print 'PARAMETER --> ', parameter
         uinput = userInput(actions, parameters)
         print 'UINPUT --> ' , uinput
         methods = constructMethods(actions,uinput)
