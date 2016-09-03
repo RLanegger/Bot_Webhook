@@ -10,6 +10,9 @@ from flask import Flask
 from flask import request
 from flask import make_response
 
+status = 'LHOpenAPIFlightStatus'
+gate = 'LHOpenAPITerminalGate'
+
 client_id = ('edqrrrnzamxxj24z5haa6r4j')
 client_secret = ('bVAJshaVVf')
 
@@ -146,21 +149,20 @@ def getInputDate(indate):
       return date
       
 def userInput(actions, parameters):
-        #print actions
-        if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
-            #print parameters.get('date')
-            date = getInputDate(parameters.get('date'))
-            print 'Date for FlightStatus ' + date
-            result = {
-                'flightNumber' : parameters.get('FlightNumber'),
-                "date": date
-                    }
-  
-        return result
+    print actions
+    if actions == status or actions == gate:
+        #print parameters.get('date')
+        date = getInputDate(parameters.get('date'))
+        print 'Date for FlightStatus ' + date
+        result = {
+            'flightNumber' : parameters.get('FlightNumber'),
+            "date": date
+                }
+ 
+    return result
 
 def constructMethods(actions,uinput):
-    
-    if actions == 'LHOpenAPIFlightStatus' or actions =='LHOpenAPITerminalGate':
+    if actions == status or actions == gate:
         flightDate = str(uinput.get("date"))
         flightNumber = str(uinput.get("flightNumber")) 
         #print flightNumber
