@@ -140,15 +140,16 @@ def callRequest(myrequest, header):
     
 def getInputDate(indate):
     print 'INDATE --> ', indate
-    rfcString = indate.get('date')
-    print 'RFCSTRING --> ', rfcstrin
+    #Intended for any date conversion error in API.AI (bug corrected)
+    #rfcString = indate.get('date')
+    #print 'RFCSTRING --> ', rfcstrin
     #if sys.platform == 'darwin':
-    date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
+    #date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
     #else:
     #    date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
  #     print date
 #      print rfcString
-    return date
+    return indate
       
 def userInput(actions, parameters):
     print 'ACTIONS --> ',actions
