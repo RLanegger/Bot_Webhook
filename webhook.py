@@ -65,15 +65,15 @@ def header_token (file):
 #            header_call = createHeader(access_token)
 #            return header_call 
 #    else:
-        print 'get initial Header'
-        access_token =  getNewToken()
+    print 'get initial Header2'
+    access_token =  getNewToken()
         #f = open(file,'w')
         #stream = str(now) + ';' + str(access_token)
         #f.write(stream)
         #f.close()
-        print access_token
-        header_call = createHeader(access_token)
-        return header_call        
+    print access_token
+    header_call = createHeader(access_token)
+    return header_call        
         
 #    return 'Error in Authentication'
 
