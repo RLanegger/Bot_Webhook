@@ -216,7 +216,7 @@ def buildGateInformation(lh_api, parameters,header):
 def processRequest(req):
     try:
         header = getHeader()
-        result = req.get('result')
+        result = req.get('result') 
         print 'RESULT --> ' , result
         actions = result.get('action')  #get what ressource to ask on API
         print 'ACTION --> ', actions
