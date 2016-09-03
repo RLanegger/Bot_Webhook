@@ -65,13 +65,12 @@ def header_token (file):
 #            header_call = createHeader(access_token)
 #            return header_call 
 #    else:
-    print 'get initial Header2'
+    print 'get initial Header'
     access_token =  getNewToken()
         #f = open(file,'w')
         #stream = str(now) + ';' + str(access_token)
         #f.write(stream)
         #f.close()
-    print access_token
     header_call = createHeader(access_token)
     return header_call        
         
@@ -84,10 +83,8 @@ def getNewToken():
         'client_secret': client_secret, 
         'grant_type' : 'client_credentials'}
     try:            
-        print header_auth
         r = requests.post(request, data = header_auth)
         j =  r.json() 
-        print j
 #        access_token = { 'Authorization': 'Bearer ' + j['access_token']}
 
         if r.status_code > 299:
@@ -222,7 +219,7 @@ def processRequest(req):
         result = req.get('result')
         actions = result.get('action')  #get what ressource to ask on API
         parameters = result.get("parameters")
-        print parameters
+
         uinput = userInput(actions, parameters)
         
         methods = constructMethods(actions,uinput)
