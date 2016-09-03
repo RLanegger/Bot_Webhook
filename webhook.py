@@ -71,6 +71,7 @@ def header_token (file):
         #stream = str(now) + ';' + str(access_token)
         #f.write(stream)
         #f.close()
+        print access_token
         header_call = createHeader(access_token)
         return header_call        
         
