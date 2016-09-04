@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import json
 import sys
 from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling
+from declarations import Token
 
 from flask import Flask
 from flask import request
@@ -41,7 +42,7 @@ def webhook():
 
     
 
-def header_token (file):
+def header_token ():
 #    now = datetime.now()
 #    old = now 
 #    try:
@@ -51,30 +52,19 @@ def header_token (file):
 #    tmp = f.read()
 #    print ('Test - ' + str(tmp) )
 #    f.close()
-#    if tmp:
+
 #        strtime = tmp.split(';')[0]
 #        time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
 #        access_token = tmp.split(';')[1]
 #        if time < now or len(access_token) <= 20: #Token is invalid because older than 24h
-#            print ('get new header')
-#            access_token =  getNewToken()
-#            f = open(file,'w')
-#            #stream = str(now) + ';' + str(access_token)
-#            #f.write(stream)
-#            #f.close() 
-#            header_call = createHeader(access_token)
-#            return header_call
-#        else:
-#            header_call = createHeader(access_token)
-#            return header_call 
-#    else:
+ 
+
     print 'get initial Header'
-    access_token =  getNewToken()
-        #f = open(file,'w')
-        #stream = str(now) + ';' + str(access_token)
-        #f.write(stream)
-        #f.close()
-    header_call = createHeader(access_token)
+#    access_token =  getNewToken() --> Token mit einer Variablen
+
+    if mytoken.isAuthenticated == True:
+        header_call = createHeader(mytoken.access_token)
+
     return header_call        
         
 #    return 'Error in Authentication'
@@ -117,7 +107,7 @@ def createHeader(access_token):
     
 def getHeader():       
     file = './key.txt'
-    headers = header_token(file)
+    headers = header_token()
     return headers
 
 def callRequest(myrequest, header):
@@ -156,7 +146,7 @@ def userInput(actions, parameters):
     if actions == status or actions == gate:
         #print parameters.get('date')
         date = getInputDate(parameters.get('date'))
-        print 'Date for FlightStatus ' + date
+        print 'Date for FlightStatus ', date
         result = {
             'flightNumber' : parameters.get('FlightNumber'),
             "date": date
@@ -252,12 +242,14 @@ def processRequest(req):
             
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
-
+    mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
+    mytoken.authenticate()
     print "Starting app on port %d" % port
     if sys.platform == 'darwin':
         app.run(debug=False, port=port, host='127.0.0.1') 
     else:
         app.run(debug=False, port=port, host='0.0.0.0') 
+
         
 
     
