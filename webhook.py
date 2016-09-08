@@ -49,15 +49,27 @@ def header_token ():
     old = now 
     try:
         f = open(file,'r')
+        old_line = f.read()
+        print ('Check Date - ' + str(old_line) )
+        f.close()
+        strtime = old_line.split(';')[1]
+        time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
+        old_access_token = old_line.split(';')[0]
+        if time < now or len(old_access_token) <= 20: #Token is invalid because older than 24h
+            print 'AUTHENTICATION --> get Header'
+            mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
+            mytoken.authenticate()
+            if mytoken.isAuthenticated == True:
+                header_call = createHeader(mytoken.access_token)
+                f = open(file,'w')
+                new_line = mytoken.access_token + ';'  + str(datetime.now())
+                f.write(new_line)          
+        else:
+            print 'AUTHENTICATION --> REUSE Header'
+            header_call = createHeader(old_access_token)
+        return header_call
     except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)     
-    old_line = f.read()
-    print ('Check Date - ' + str(old_line) )
-    f.close()
-    strtime = old_line.split(';')[1]
-    time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
-    old_access_token = old_line.split(';')[0]
-    if time < now or len(old_access_token) <= 20: #Token is invalid because older than 24h
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)   
         print 'AUTHENTICATION --> get Header'
         mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
         mytoken.authenticate()
@@ -65,11 +77,7 @@ def header_token ():
             header_call = createHeader(mytoken.access_token)
             f = open(file,'w')
             new_line = mytoken.access_token + ';'  + str(datetime.now())
-            f.write(line)          
-    else:
-        print 'AUTHENTICATION --> REUSE Header'
-        header_call = createHeader(old_access_token)
-    return header_call        
+            f.write(new_line)
         
 #    return 'Error in Authentication'
 
