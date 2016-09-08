@@ -6,6 +6,7 @@ import json
 import sys
 from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling
 from declarations import Token
+import pickle
 
 from flask import Flask
 from flask import request
@@ -43,28 +44,31 @@ def webhook():
     
 
 def header_token ():
-#    now = datetime.now()
-#    old = now 
-#    try:
-#        f = open(file,'r')
-#    except IOError as e:
-#        print "I/O error({0}): {1}".format(e.errno, e.strerror)     
-#    tmp = f.read()
-#    print ('Test - ' + str(tmp) )
-#    f.close()
-
-#        strtime = tmp.split(';')[0]
-#        time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
-#        access_token = tmp.split(';')[1]
-#        if time < now or len(access_token) <= 20: #Token is invalid because older than 24h
- 
-
-    print 'get initial Header'
-#    access_token =  getNewToken() --> Token mit einer Variablen
-
-    if mytoken.isAuthenticated == True:
-        header_call = createHeader(mytoken.access_token)
-
+    file = './header.txt'
+    now = datetime.now()
+    old = now 
+    try:
+        f = open(file,'r')
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)     
+    old_line = f.read()
+    print ('Check Date - ' + str(old_line) )
+    f.close()
+    strtime = old_line.split(';')[1]
+    time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
+    old_access_token = old_line.split(';')[0]
+    if time < now or len(old_access_token) <= 20: #Token is invalid because older than 24h
+        print 'AUTHENTICATION --> get Header'
+        mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
+        mytoken.authenticate()
+        if mytoken.isAuthenticated == True:
+            header_call = createHeader(mytoken.access_token)
+            f = open(file,'w')
+            new_line = mytoken.access_token + ';'  + str(datetime.now())
+            f.write(line)          
+    else:
+        print 'AUTHENTICATION --> REUSE Header'
+        header_call = createHeader(old_access_token)
     return header_call        
         
 #    return 'Error in Authentication'
@@ -108,6 +112,7 @@ def createHeader(access_token):
 def getHeader():       
     file = './key.txt'
     headers = header_token()
+
     return headers
 
 def callRequest(myrequest, header):
@@ -242,8 +247,7 @@ def processRequest(req):
             
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
-    mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
-    mytoken.authenticate()
+  
     print "Starting app on port %d" % port
     if sys.platform == 'darwin':
         app.run(debug=False, port=port, host='127.0.0.1') 

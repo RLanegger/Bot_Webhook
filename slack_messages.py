@@ -6,7 +6,7 @@ def buildFlightStatusSpeech(flightstatus):
     date = str(flightstatus.get('date'))
     flight = str(flightstatus.get('flight'))
         
-    speech = 'Your flight' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
+    speech = 'Your flight ' + flight + 'on date ' + date + ' from ' + origin + ' to ' + destination + ' is ' + status
     
     if status == 'Flight Delayed':
         color = '#FF0000'
