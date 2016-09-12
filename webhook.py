@@ -50,10 +50,11 @@ def header_token ():
     try:
         f = open(file,'r')
         old_line = f.read()
-        print ('Check Date - ' + str(old_line) )
+        print ('TOKEN FILE --> ' + str(old_line) )
         f.close()
         strtime = old_line.split(';')[1]
         time = datetime.strptime(strtime, '%Y-%m-%d %H:%M:%S.%f') + timedelta(hours=+24)
+        print 'TIME --> ', time
         old_access_token = old_line.split(';')[0]
         if time < now or len(old_access_token) <= 20: #Token is invalid because older than 24h
             print 'AUTHENTICATION --> get Header'
