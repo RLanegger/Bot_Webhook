@@ -70,8 +70,8 @@ def header_token ():
             header_call = createHeader(old_access_token)
         return header_call
     except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)   
-        print 'AUTHENTICATION --> get Header'
+#        print "I/O error({0}): {1}".format(e.errno, e.strerror)   
+        print 'AUTHENTICATION --> GET Header'
         mytoken = Token('https://api.lufthansa.com/v1/oauth/token' ,client_id , client_secret)
         mytoken.authenticate()
         if mytoken.isAuthenticated == True:
@@ -95,10 +95,10 @@ def getNewToken():
 
         if r.status_code > 299:
             raise URLError('No access token retrieved! :')
-            print 'Error in  Authorization'
+            print 'AUTHORIZATION --> Error in  Authorization'
         else:
             token = j['access_token']
-            print 'Successful authorized'
+            print 'AUTHORIZATION --> Successful authorized'
             return token
             
     except URLError, e:
@@ -133,9 +133,9 @@ def callRequest(myrequest, header):
         req_data = 'https://api.lufthansa.com/v1/' + myrequest
 #        try:
 #        req_data = data
-        print req_data
+        print 'REQUEST --> ', req_data
         req_call = requests.get(req_data, headers = header) 
-        print str(myrequest) + ' --> Response Status: ' + str(req_call.status_code)
+        print 'RESPONSE STATUS ---> ',str(req_call.status_code)
         if req_call.status_code <> 200:
             raise URLError('Error in Input data')
         else:
@@ -160,7 +160,7 @@ def userInput(actions, parameters):
     if actions == status or actions == gate:
         #print parameters.get('date')
         date = getInputDate(parameters.get('date'))
-        print 'Date for FlightStatus ', date
+        #print 'Date for FlightStatus ', date
         result = {
             'flightNumber' : parameters.get('FlightNumber'),
             "date": date
@@ -240,14 +240,16 @@ def processRequest(req):
         if actions == 'LHOpenAPIFlightStatus':
             flightstatus =  buildFlightStatus(lh_api, uinput,header)
             speech = buildFlightStatusSpeech(flightstatus)
+            print 'SPEECH -->', flightstatus
         elif actions == 'LHOpenAPITerminalGate':
         #GateInformation from Flightstatus
             depgate = buildGateInformation(lh_api, uinput,header)
             speech = buildGateSpeech(depgate)
+            print 'SPEECH -->', depgate
         return speech
     except URLError, e:
         speech = errorHandling(e,actions)
-        print 'Error: ', e
+        print 'ERROR --> ', e
         raise URLError(speech)
 
 #        return e #URLError('Error in Input data')
