@@ -226,7 +226,7 @@ def processRequest(req):
     try:
         header = getHeader()
         result = req.get('result') 
-        print 'RESULT --> ' , result
+        #print 'RESULT --> ' , result
         actions = result.get('action')  #get what ressource to ask on API
         print 'ACTION --> ', actions
         parameters = result.get('parameters')
