@@ -104,7 +104,39 @@ def buildGateSpeech(depgate):
             "source": "LHOpenAPITerminalGate",
             "data": { "slack" : slack_message }
         }
-        
+ 
+ 
+def buildLoungeInfoSpeech(loungedata):    
+    
+    speech = 'Your City contains the following lounges '
+    for lounge in loungedata:
+        speech += str(lounge.get('Name')) + ', '
+        slack_message = {
+            "text": speech,
+            "attachments": [
+                {
+                    "title": lounge.get('Name'),
+                    "color": "#36a64f",
+                    "fields" : [
+                        {
+                            "title": "Location",
+                            "value": lounge.get('Location'),
+                            "short": "false"
+                        },
+                        {
+                            "title": "Date",
+                            "value": lounge.get('OpeningHours'),
+                            "short": "false"
+                        }
+                    ]
+                }
+            ]
+        }
+       
+        #    print("Response:")
+        #    print(speech)   
+        return { "speech": speech, "displayText": speech, "source": "LHOpenAPILoungeInfo", "data": { "slack" : slack_message } }
+           
 def errorHandling(e, actions):
     return {
             "speech": e.reason,

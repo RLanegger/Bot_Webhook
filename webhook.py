@@ -4,8 +4,11 @@ import urllib2
 from datetime import datetime, timedelta
 import json
 import sys
-from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling
+from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling, buildLoungeInfoSpeech
+#from helpers import getAirportCode
 from declarations import Token
+from fares import buildfaresummary
+from lounges import loungeFeatures, buildLoungeInfo
 import pickle
 
 from flask import Flask
@@ -14,6 +17,8 @@ from flask import make_response
 
 status = 'LHOpenAPIFlightStatus'
 gate = 'LHOpenAPITerminalGate'
+loungeInfo = 'LHOpenAPILoungeInfo'
+fareSummary = 'faresummary'
 
 client_id = ('edqrrrnzamxxj24z5haa6r4j')
 client_secret = ('bVAJshaVVf')
@@ -103,7 +108,6 @@ def getNewToken():
             
     except URLError, e:
         print 'Error: ', e
- #   else:
  
 def is_json(myjson):
     try:
@@ -155,7 +159,7 @@ def getInputDate(indate):
 #      print rfcString
     return indate
       
-def userInput(actions, parameters):
+def userInput(actions, parameters,header):
     print 'ACTIONS --> ',actions
     if actions == status or actions == gate:
         #print parameters.get('date')
@@ -165,7 +169,12 @@ def userInput(actions, parameters):
             'flightNumber' : parameters.get('FlightNumber'),
             "date": date
                 }
- 
+    elif actions == fareSummary:
+        print 'FareSummary'
+        result = actions 
+    elif actions == loungeInfo:
+        airport = getAirportCode(parameters.get('city'),header)
+        result = airport 
     return result
 
 def constructMethods(actions,uinput):
@@ -175,6 +184,17 @@ def constructMethods(actions,uinput):
         #print flightNumber
         methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
         #print methods
+    elif actions == fareSummary:
+#        origin = buildairport(uiput.get(segments))
+#        destination
+#        catalog
+#        traveldate 
+#        returndate
+#        travellers
+        faretype = 'BASIC'
+        methods = 'offers/fares/fares?'
+    elif actions == loungeInfo:
+        methods = 'offers/lounges/' + str(uinput.get('airportCode')) 
     return methods
     
 def buildFlightStatus(lh_api, parameters,header):
@@ -221,7 +241,7 @@ def buildGateInformation(lh_api, parameters,header):
             }
 
         return depgate
- 
+        
 def processRequest(req):
     try:
         header = getHeader()
@@ -231,21 +251,28 @@ def processRequest(req):
         print 'ACTION --> ', actions
         parameters = result.get('parameters')
         print 'PARAMETER --> ', parameters
-        uinput = userInput(actions, parameters)
+        uinput = userInput(actions, parameters,header)
         print 'UINPUT --> ' , uinput
         methods = constructMethods(actions,uinput)
     #print methods   
         lh_api = callRequest(methods, header)
     #print lh_api
-        if actions == 'LHOpenAPIFlightStatus':
+        if actions == status:
             flightstatus =  buildFlightStatus(lh_api, uinput,header)
             speech = buildFlightStatusSpeech(flightstatus)
             print 'SPEECH -->', flightstatus
-        elif actions == 'LHOpenAPITerminalGate':
+        elif actions == gate:
         #GateInformation from Flightstatus
             depgate = buildGateInformation(lh_api, uinput,header)
             speech = buildGateSpeech(depgate)
             print 'SPEECH -->', depgate
+#        elif actions == fareSummary:
+#            faresummary = buildfaresummary(lh_api, uiput,header)
+#            print 'SPEECH -->'
+        elif actions == loungeInfo:
+            loungedata = buildLoungeInfo(lh_api,uinput,header)
+            speech = buildLoungeInfoSpeech(loungedata)
+            print 'SPEECH --> Lounges' 
         return speech
     except URLError, e:
         speech = errorHandling(e,actions)
@@ -254,8 +281,18 @@ def processRequest(req):
 
 #        return e #URLError('Error in Input data')
             
-
+def getAirportCode(cityCode,header):
+    methods = 'references/cities/'+ str(cityCode) + '?limit=20&offset=0'
+    CityResource =  callRequest(methods, header)    
+    airports = CityResource.get('CityResource').get('Cities').get('City').get('Airports').get('AirportCode')
+### ACHTUNG NUR DIE 2.Lounge aus der LISTE wird ausgegeben
+    print 'AIRPORTS --> ' + airports[1]
+    airportCode = {
+            'airportCode' : airports[1],
+                }
+    return airportCode
             
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
   
