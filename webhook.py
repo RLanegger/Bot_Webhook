@@ -4,8 +4,8 @@ import urllib2
 from datetime import datetime, timedelta
 import json
 import sys
-from slack_messages import buildFlightStatusSpeech, buildGateSpeech,errorHandling, buildLoungeInfoSpeech
-#from helpers import getAirportCode
+from slack_messages import buildSpeech,buildFlightStatusSpeech, buildGateSpeech,errorHandling, buildLoungeInfoSpeech
+#from helpers import is_json
 from declarations import Token
 from fares import buildfaresummary
 from lounges import loungeFeatures, buildLoungeInfo
@@ -19,6 +19,7 @@ status = 'LHOpenAPIFlightStatus'
 gate = 'LHOpenAPITerminalGate'
 loungeInfo = 'LHOpenAPILoungeInfo'
 fareSummary = 'faresummary'
+noDataInQuery = 'Query no data'
 
 client_id = ('edqrrrnzamxxj24z5haa6r4j')
 client_secret = ('bVAJshaVVf')
@@ -84,8 +85,6 @@ def header_token ():
             f = open(file,'w')
             new_line = mytoken.access_token + ';'  + str(datetime.now())
             f.write(new_line)
-        
-#    return 'Error in Authentication'
 
 def getNewToken():
     request = ('https://api.lufthansa.com/v1/oauth/token')
@@ -96,8 +95,6 @@ def getNewToken():
     try:            
         r = requests.post(request, data = header_auth)
         j =  r.json() 
-#        access_token = { 'Authorization': 'Bearer ' + j['access_token']}
-
         if r.status_code > 299:
             raise URLError('No access token retrieved! :')
             print 'AUTHORIZATION --> Error in  Authorization'
@@ -141,7 +138,12 @@ def callRequest(myrequest, header):
         req_call = requests.get(req_data, headers = header) 
         print 'RESPONSE STATUS ---> ',str(req_call.status_code)
         if req_call.status_code <> 200:
-            raise URLError('Error in Input data')
+            if req_call.status_code == 404:
+                print 'RESPONSE --->', noDataInQuery
+                result =  'Query no data'
+                return result
+            else:
+                raise URLError('Error in Input data')
         else:
             return req_call.json()
    
@@ -149,40 +151,43 @@ def callRequest(myrequest, header):
 def getInputDate(indate):
     print 'INDATE --> ', indate
     #Intended for any date conversion error in API.AI (bug corrected)
-    #rfcString = indate.get('date')
-    #print 'RFCSTRING --> ', rfcstrin
+    rfcString = indate.get('rfcString')
+    print 'RFCSTRING --> ', rfcString
     #if sys.platform == 'darwin':
     #date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
     #else:
-    #    date = rfcString[0:4] + '-' + str(int(rfcString[4:6]) - 1  ) + '-' + rfcString[6:8]
+#    date = indate
+    date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
  #     print date
 #      print rfcString
-    return indate
+    return date
       
 def userInput(actions, parameters,header):
     print 'ACTIONS --> ',actions
+    result = []
     if actions == status or actions == gate:
         #print parameters.get('date')
         date = getInputDate(parameters.get('date'))
         #print 'Date for FlightStatus ', date
-        result = {
-            'flightNumber' : parameters.get('FlightNumber'),
-            "date": date
-                }
+        result.append({'flightNumber' : parameters.get('FlightNumber'),'date': date})
     elif actions == fareSummary:
         print 'FareSummary'
-        result = actions 
+        result.append(actions)
     elif actions == loungeInfo:
-        airport = getAirportCode(parameters.get('city'),header)
-        result = airport 
+        airports = getAirportCode(parameters.get('city'),header)
+        for airport in airports:
+           result.append({'airportCode' : airport })
     return result
 
 def constructMethods(actions,uinput):
+    methods = []
     if actions == status or actions == gate:
-        flightDate = str(uinput.get("date"))
-        flightNumber = str(uinput.get("flightNumber")) 
+        for inputLine in uinput:
+            flightDate = str(inputLine.get("date"))
+            flightNumber = str(inputLine.get("flightNumber"))
+            flightNumber.replace(" ","") 
         #print flightNumber
-        methods = 'operations/flightstatus/' + flightNumber + '/' + flightDate #LH400/2016-04-10'
+            methods.append ('operations/flightstatus/' + flightNumber + '/' + flightDate )#LH400/2016-04-10'
         #print methods
     elif actions == fareSummary:
 #        origin = buildairport(uiput.get(segments))
@@ -192,9 +197,10 @@ def constructMethods(actions,uinput):
 #        returndate
 #        travellers
         faretype = 'BASIC'
-        methods = 'offers/fares/fares?'
+        methods.append ('offers/fares/fares?')
     elif actions == loungeInfo:
-        methods = 'offers/lounges/' + str(uinput.get('airportCode')) 
+        for airportCode in uinput:
+            methods.append ('offers/lounges/' + str(airportCode.get('airportCode')) )
     return methods
     
 def buildFlightStatus(lh_api, parameters,header):
@@ -236,14 +242,17 @@ def buildGateInformation(lh_api, parameters,header):
             'origin' : originStatus,
             'terminal' : terminal,
             'gate' : gate,
-            'date' : parameters.get('date'),
-            'flight' : parameters.get('flightNumber')
+            'date' : parameters[0].get('date'),
+            'flight' : parameters[0].get('flightNumber')
             }
 
         return depgate
         
 def processRequest(req):
     try:
+        lh_apis =[]
+        builddata = []
+        speechBody =[]
         header = getHeader()
         result = req.get('result') 
         #print 'RESULT --> ' , result
@@ -254,25 +263,44 @@ def processRequest(req):
         uinput = userInput(actions, parameters,header)
         print 'UINPUT --> ' , uinput
         methods = constructMethods(actions,uinput)
+
     #print methods   
-        lh_api = callRequest(methods, header)
+        for method in methods:
+            data = callRequest(method, header)
+#            print 'LHAPI -->', str(data)
+            if data <> noDataInQuery:
+                lh_apis.append(data)
+            
     #print lh_api
-        if actions == status:
-            flightstatus =  buildFlightStatus(lh_api, uinput,header)
-            speech = buildFlightStatusSpeech(flightstatus)
-            print 'SPEECH -->', flightstatus
-        elif actions == gate:
+        print 'LH_API LIST --> ', str(len(lh_apis))
+        for lh_api in lh_apis:
+
+            print 'ACTION --> ', str(actions)
+            if actions == status:   
+                builddata.append(buildFlightStatus(lh_api, uinput,header))
+                speechBody.append(buildFlightStatusSpeech(builddata))
+            elif actions == gate:
         #GateInformation from Flightstatus
-            depgate = buildGateInformation(lh_api, uinput,header)
-            speech = buildGateSpeech(depgate)
-            print 'SPEECH -->', depgate
+
+                builddata.append(buildGateInformation(lh_api, uinput,header))
+#                print 'BUILDDATA --> ', str(builddata)
+                speechBody.append(buildGateSpeech(builddata))
+#                print 'Speechbody'
 #        elif actions == fareSummary:
 #            faresummary = buildfaresummary(lh_api, uiput,header)
 #            print 'SPEECH -->'
-        elif actions == loungeInfo:
-            loungedata = buildLoungeInfo(lh_api,uinput,header)
-            speech = buildLoungeInfoSpeech(loungedata)
-            print 'SPEECH --> Lounges' 
+            elif actions == loungeInfo:
+#                    print lh_api
+                lounges = buildLoungeInfo(lh_api,uinput,header)
+                for lounge in lounges:
+                    speechBody.append(buildLoungeInfoSpeech(lounge))
+#                    builddata.append(buildLoungeInfoSpeech(lounge))
+#                    speechBody.append(builddata)
+            
+            print 'BUILDDATA LIST --> ', str(len(builddata))
+
+#        print 'LHAPI BUILD --> ', builddata
+        speech = buildSpeech(speechBody)       
         return speech
     except URLError, e:
         speech = errorHandling(e,actions)
@@ -282,16 +310,25 @@ def processRequest(req):
 #        return e #URLError('Error in Input data')
             
 def getAirportCode(cityCode,header):
+    airportCodes =  []
     methods = 'references/cities/'+ str(cityCode) + '?limit=20&offset=0'
     CityResource =  callRequest(methods, header)    
     airports = CityResource.get('CityResource').get('Cities').get('City').get('Airports').get('AirportCode')
-### ACHTUNG NUR DIE 2.Lounge aus der LISTE wird ausgegeben
-    print 'AIRPORTS --> ' + airports[1]
-    airportCode = {
-            'airportCode' : airports[1],
-                }
-    return airportCode
-            
+    if isinstance(airports, list):
+        for airport in airports:
+            print 'AIRPORTS --> ' + airport
+            airportCodes.append (airport)
+    else:
+           print 'AIRPORT --> ' + airports
+           airportCodes.append (airports)
+    print airportCodes
+    return airportCodes
+
+def is_json(myjson):
+    if myjson == noDataInQuery:
+        return False
+    else:
+        return True         
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
