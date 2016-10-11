@@ -199,7 +199,7 @@ def constructMethods(actions,uinput):
 #        faretype = 'BASIC'
         testfare = 'https://api-test.lufthansa.com/v1/offers/fares?catalogues=4U&segments=%28origin%3DSTR%3Bdestination%3DAMS%3Btravel-date%3D2016-10-30%3Breturn-date%3D2016-10-30%3Bcabin%3DEconomy%29&travelers=adult%3D1&fare-types=BASIC&carriers=4U'
 #        methods.append ('offers/fares/fares?')
-         methods.append (testfare)
+        methods.append (testfare)
     elif actions == loungeInfo:
         for airportCode in uinput:
             methods.append ('offers/lounges/' + str(airportCode.get('airportCode')) )
