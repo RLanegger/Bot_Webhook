@@ -158,8 +158,8 @@ def getInputDate(indate):
     #else:
 #    date = indate
     date = rfcString[0:4] + '-' + str(int(rfcString[4:6])) + '-' + rfcString[6:8]
- #     print date
-#      print rfcString
+#     print date
+#     print rfcString
     return date
       
 def userInput(actions, parameters,header):
@@ -171,7 +171,7 @@ def userInput(actions, parameters,header):
         #print 'Date for FlightStatus ', date
         result.append({'flightNumber' : parameters.get('FlightNumber'),'date': date})
     elif actions == fareSummary:
-        print 'FareSummary'
+        print 'FARESUMMARY --> ', faresummary
         result.append(actions)
     elif actions == loungeInfo:
         airports = getAirportCode(parameters.get('city'),header)
@@ -196,8 +196,10 @@ def constructMethods(actions,uinput):
 #        traveldate 
 #        returndate
 #        travellers
-        faretype = 'BASIC'
-        methods.append ('offers/fares/fares?')
+#        faretype = 'BASIC'
+        testfare = 'https://api-test.lufthansa.com/v1/offers/fares?catalogues=4U&segments=%28origin%3DSTR%3Bdestination%3DAMS%3Btravel-date%3D2016-10-30%3Breturn-date%3D2016-10-30%3Bcabin%3DEconomy%29&travelers=adult%3D1&fare-types=BASIC&carriers=4U'
+#        methods.append ('offers/fares/fares?')
+         methods.append (testfare)
     elif actions == loungeInfo:
         for airportCode in uinput:
             methods.append ('offers/lounges/' + str(airportCode.get('airportCode')) )
@@ -255,7 +257,7 @@ def processRequest(req):
         speechBody =[]
         header = getHeader()
         result = req.get('result') 
-        #print 'RESULT --> ' , result
+        print 'RESULT --> ' , result
         actions = result.get('action')  #get what ressource to ask on API
         print 'ACTION --> ', actions
         parameters = result.get('parameters')
